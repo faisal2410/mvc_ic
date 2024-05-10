@@ -22,10 +22,8 @@ class Products extends Controller
         $products = $this->model->findAll();
 
         
-        echo $this->viewer->render("shared/header.php", [
-            "title" => "Products"
-        ]);
-        echo  $this->viewer->render("Products/index.php", [
+     
+        echo  $this->viewer->render("Products/index.mvc.php", [           
             "products" => $products,
             "total"=>$this->model->getTotal()
         ]);
@@ -36,10 +34,8 @@ class Products extends Controller
 
      $product=$this->getProduct($id);
 
-        echo $this->viewer->render("shared/header.php", [
-            "title" => "Product"
-        ]);
-        echo $this->viewer->render("Products/show.php", [
+      
+        echo $this->viewer->render("Products/show.mvc.php", [
             "product" => $product
         ]);
     }
