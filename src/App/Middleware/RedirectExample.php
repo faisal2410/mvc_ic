@@ -8,14 +8,18 @@ use Framework\Request;
 use Framework\Response;
 use Framework\RequestHandlerInterface;
 
-class ChangeResponseExample implements MiddlewareInterface
+class RedirectExample implements MiddlewareInterface
 {
+    
+    public function __construct(private Response $response)
+    {
+        
+    }
+    
+    
     public function process(Request $request, RequestHandlerInterface $next):Response
     {
-        $response=$next->handle($request);
-
-        $response->setBody($response->getBody()."hello from the middleware");
-
-        return $response;
+        $this->response->redirect("/products/index");
+        return $this->response;
     }
 }
