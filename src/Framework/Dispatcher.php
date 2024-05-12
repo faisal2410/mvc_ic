@@ -3,15 +3,19 @@
 declare(strict_types=1);
 namespace Framework;
 
+use App\Middleware\ChangeRequestExample;
 use ReflectionMethod;
 use UnexpectedValueException;
+use App\Middleware\ChangeResponseExample;
 use Framework\Exceptions\PageNotFoundException;
 
 class Dispatcher
 {
     
 
-    public function __construct(private Router $router, private Container $container)
+    public function __construct(private Router $router,
+                                private Container $container,
+                                private array $middleware_classes)
     {
        
     }
@@ -32,13 +36,46 @@ class Dispatcher
         $controller=$this->getControllerName($params);
         
       $controller_object=$this->container->get($controller);
-      $controller_object->setRequest($request);
+      
       $controller_object->setViewer($this->container->get(TemplateViewerInterface::class));
       $controller_object->setResponse($this->container->get(Response::class));
 
       $args= $this->getActionArguments($controller, $action, $params);
-      return  $controller_object->$action(...$args);
+      $controller_handler= new ControllerRequestHandler($controller_object,$action,$args);
+
+
+    
+        $middleware = $this->getMiddleware($params);
+
+        
+    $middleware_handler= new MiddlewareRequestHandler($middleware,$controller_handler);
+
+    return $middleware_handler->handle($request);
+
     }
+
+    private function getMiddleware(array $params): array
+    {
+        if (
+            !array_key_exists("middleware", $params)
+        ) {
+
+            return [];
+        }
+
+        $middleware = explode("|", $params["middleware"]);
+
+        array_walk($middleware, function(&$value){
+            if(!array_key_exists($value, $this->middleware_classes)){
+                throw new UnexpectedValueException("Middleware '$value' not found in config settings");
+            }
+            $value=$this->container->get($this->middleware_classes[$value]);
+
+        });
+
+        return $middleware;
+    }
+
 
     private function getActionArguments(string $controller, string $action, array $params):array
     {

@@ -22,35 +22,33 @@ class Products extends Controller
         
         $products = $this->model->findAll();
 
-        
-     
-        $this->response->setBody($this->viewer->render("Products/index.mvc.php", [           
-            "products" => $products,
+        return $this->view("Products/index.mvc.php",[
+            "products"=>$products,
             "total"=>$this->model->getTotal()
-        ]));
-
-       return $this->response;
+        ]);
+     
+      
     }
 
-    public function show(string $id)
+    public function show(string $id):Response
     {
 
      $product=$this->getProduct($id);
 
       
-        echo $this->viewer->render("Products/show.mvc.php", [
+        return $this->view("Products/show.mvc.php", [
             "product" => $product
         ]);
     }
 
 
 
-    public function edit(string $id)
+    public function edit(string $id):Response
     {
         $product = $this->getProduct($id);
      
       
-        echo $this->viewer->render("Products/edit.mvc.php", [
+        return $this->view("Products/edit.mvc.php", [
             "product" => $product
         ]);
     }
@@ -72,14 +70,14 @@ class Products extends Controller
         echo $title, " ", $id, " ", $page;
     }
 
-    public function new()
+    public function new():Response
     {
        
 
-        echo $this->viewer->render("Products/new.mvc.php");
+        return $this->view("Products/new.mvc.php");
     }
 
-    public function create()
+    public function create():Response
     {
         $data=[
             "name"=>$this->request->post["name"],
@@ -88,13 +86,13 @@ class Products extends Controller
         ];
        if( $this->model->insert($data)){
 
-            header("Location: /products/{$this->model->getInsertID()}/show");
-       exit();
+           return $this->redirect("/products/{$this->model->getInsertID()}/show");
+       
        }else{
 
        
 
-        echo $this->viewer->render("Products/new.mvc.php",[
+        return $this->view("Products/new.mvc.php",[
             "errors"=>$this->model->getErrors(),
             "product"=>$data
         ]);
@@ -102,7 +100,7 @@ class Products extends Controller
        }
       
     }
-    public function update(string $id)
+    public function update(string $id):Response
     {
         $product = $this->getProduct($id);
        
@@ -113,13 +111,13 @@ class Products extends Controller
         
        if( $this->model->update($id,$product)){
 
-            header("Location: /products/{$id}/show");
-       exit();
+            return $this->redirect("/products/{$id}/show");
+       
        }else{
 
        
 
-        echo $this->viewer->render("Products/edit.mvc.php",[
+        return $this->view("Products/edit.mvc.php",[
             "errors"=>$this->model->getErrors(),
             "product"=>$product
         ]);
@@ -129,26 +127,33 @@ class Products extends Controller
     }
 
 
-    public function delete(string $id)
+    public function delete(string $id):Response
     {
         $product=$this->getProduct($id);
 
        
      
 
-        echo $this->viewer->render("Products/delete.mvc.php",[
+        return $this->view("Products/delete.mvc.php",[
             "product"=>$product
 
         ]);
     }
 
-    public function destroy(string $id)
+    public function destroy(string $id):Response
     {
         $product=$this->getProduct($id);
              
             $this->model->delete($id);
-            header("Location:/products/index");
-            exit;
+            return $this->redirect("/products/index");
+            
         
+    }
+
+    public function responseCodeExample():Response
+    {
+        $this->response->setStatusCode(451);
+        $this->response->setBody("Unavailable for legal reasons");
+        return $this->response;
     }
 }

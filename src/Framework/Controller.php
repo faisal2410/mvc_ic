@@ -3,6 +3,8 @@
 declare(strict_types=1);
 namespace Framework;
 
+use Framework\Response;
+
 abstract class Controller
 {
     protected Request $request;
@@ -24,5 +26,18 @@ abstract class Controller
     public function setViewer(TemplateViewerInterface $viewer):void
     {
         $this->viewer=$viewer;
+    }
+
+    protected function view(string $template, array $data=[]):Response
+    {
+        $this->response->setBody($this->viewer->render($template, $data));
+
+        return $this->response;
+    }
+
+    protected function redirect(string $url):Response
+    {
+        $this->response->redirect($url);
+        return $this->response;
     }
 }
